@@ -95,6 +95,29 @@ function getreel_movie_creation_form($output) {
 
 add_filter( 'the_content', 'getreel_movie_creation_form', 10, 1 ); 
 
+/**
+ * create a link to the movie creator page in the WP toolbar
+ * 
+ * @since 1.0
+ * @param object $wp_admin_bar
+ * @return null
+ */
+function getreel_movie_creator_toolbar_link($wp_admin_bar) {
+	if ( is_user_logged_in() && current_user_can( 'edit_posts' ) ) {
+		$args = array(
+			'id' => 'getreel-creator',
+			'title' => 'Get Reel Creator', 
+			'href' => 'http://localhost/getreel/create-movie/', 
+			'meta' => array(
+				'class' => 'getreel', 
+				'title' => 'Get Reel Movie Creator'
+				)
+		);
+		$wp_admin_bar->add_node($args);
+	}
+}
+add_action('admin_bar_menu', 'getreel_movie_creator_toolbar_link', 999);
+
 
 /**
  * function that fetches movie array from tmdb
@@ -105,22 +128,24 @@ add_filter( 'the_content', 'getreel_movie_creation_form', 10, 1 );
  */
 function getreel_discover_movies() {	
 	global  $wp_version;
-	
-	$args = array(
-		'timeout'     => 60,
-		'user-agent'  => 'WordPress/' . $wp_version . '; ' . home_url(),
-	); 
 
-	$page = $_REQUEST['start'];
+	if ( is_user_logged_in() && current_user_can( 'edit_posts' ) ) {
+		$args = array(
+			'timeout'     => 60,
+			'user-agent'  => 'WordPress/' . $wp_version . '; ' . home_url(),
+		); 
 
-	$response = wp_remote_get( 'https://api.themoviedb.org/3/discover/movie?api_key=f9cf4ece2f9aeccbe524aaa92a1515ae&language=en-US&sort_by=popularity.desc&include_adult=false&include_video=false&page=' . $page, $args );
-	$body = json_decode( wp_remote_retrieve_body( $response ), true );
+		$page = $_REQUEST['start'];
 
-	foreach($body['results'] as $key => $movie) {
-		$movie_id = getreel_create_movie($movie['id']);
+		$response = wp_remote_get( 'https://api.themoviedb.org/3/discover/movie?api_key=f9cf4ece2f9aeccbe524aaa92a1515ae&language=en-US&sort_by=popularity.desc&include_adult=false&include_video=false&page=' . $page, $args );
+		$body = json_decode( wp_remote_retrieve_body( $response ), true );
+
+		foreach($body['results'] as $key => $movie) {
+			$movie_id = getreel_create_movie($movie['id']);
+		}
+
+		exit();
 	}
-
-	exit();
 }
 
 add_action('wp_ajax_getreel_discover_movies','getreel_discover_movies');
@@ -144,13 +169,14 @@ function getreel_update_movie($id, $data, $movie) {
 	$changes = $data['changes'] == NULL ? 'none' : json_encode($data['changes']);
 	$videos = $data['videos'] == NULL ? 'none' : json_encode($data['videos']);
 	$images = $data['images'] == NULL ? 'none' : json_encode($data['images']);
+	$imdb = $data['imdb_id'] == NULL ? 0: $data['imdb_id'];
 
 	$args = array(
 		'ID' => $id,
 		'post_title' => wp_strip_all_tags( $data['title'] ),
 		'post_content' => $data['overview'],
 		'post_tmdb' => $data['id'],
-		'post_imdb' => $data['imdb_id'],
+		'post_imdb' => $imdb,
 		'post_credits' => $credits,
 		'post_reviews' => $reviews,
 		'post_similar' => $similar,
@@ -228,6 +254,7 @@ function getreel_create_movie($id) {
 	$changes = $data['changes'] == NULL ? 'none' : json_encode($data['changes']);
 	$videos = $data['videos'] == NULL ? 'none' : json_encode($data['videos']);
 	$images = $data['images'] == NULL ? 'none' : json_encode($data['images']);
+	$imdb = $data['imdb_id'] == NULL ? 0: $data['imdb_id'];
 
 	$args = array(
 		'post_title' => wp_strip_all_tags( $data['title'] ),
@@ -236,7 +263,7 @@ function getreel_create_movie($id) {
 		'post_author' => 1,
 		'post_type' => 'movie',
 		'post_tmdb' => $id,
-		'post_imdb' => $data['imdb_id'],
+		'post_imdb' => $imdb,
 		'post_credits' => $credits,
 		'post_reviews' => $reviews,
 		'post_similar' => $similar,
