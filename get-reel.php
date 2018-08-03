@@ -83,41 +83,35 @@ function getreel_movie_creation_form($output) {
 add_filter( 'the_content', 'getreel_movie_creation_form', 10, 1 ); {
 
 
-	
-
 /**
- * filter content and add the movie creation form
+ * localize movie and people creator scripts
  * 
  * @since 1.0
- * @param string $output
  * @return null
  */
  add_action( 'wp_enqueue_scripts', function() {
  	if ( is_user_logged_in() && current_user_can( 'edit_posts' ) ) {
 
- 		//load script
  		wp_enqueue_script( 'people-creator', plugin_dir_url( __FILE__ ) . '/js/people-creator.js', array( 'jquery' ) );
 
- 		//localize data for script
  		wp_localize_script( 'people-creator', 'PEOPLE_CREATOR', array(
  				'ajax_url' => admin_url( 'admin-ajax.php' ),
  				'root' => esc_url_raw( rest_url() ),
  				'nonce' => wp_create_nonce( 'wp_rest' ),
- 				'success' => __( 'New people registered!', 'watuwatch' ),
- 				'failure' => __( 'Registration failed.', 'watuwatch' ),
+ 				'success' => __( 'New people registered!', 'getreel' ),
+ 				'failure' => __( 'Registration failed.', 'getreel' ),
  				'current_user_id' => get_current_user_id()
  			)
  		);
 
  		wp_enqueue_script( 'movie-creator', plugin_dir_url( __FILE__ ) . '/js/movie-creator.js', array( 'jquery' ) );
 
- 		//localize data for script
  		wp_localize_script( 'movie-creator', 'MOVIE_CREATOR', array(
  				'ajax_url' => admin_url( 'admin-ajax.php' ),
  				'root' => esc_url_raw( rest_url() ),
  				'nonce' => wp_create_nonce( 'wp_rest' ),
- 				'success' => __( 'New movie created!', 'watuwatch' ),
- 				'failure' => __( 'Creation failed.', 'watuwatch' ),
+ 				'success' => __( 'New movie created!', 'getreel' ),
+ 				'failure' => __( 'Creation failed.', 'getreel' ),
  				'current_user_id' => get_current_user_id()
  			)
  		);
@@ -125,9 +119,12 @@ add_filter( 'the_content', 'getreel_movie_creation_form', 10, 1 ); {
  });
 
 /**
- * Create movie creator page
+ * automatically creates the Create Movie page if it doesn't exist
+ * 
+ * @since 1.0
+ * @return int
  */
-function watu_add_movie_creator() {
+function getreel_add_movie_creator() {
 	if ( ! is_admin() ) {
 		require_once( ABSPATH . 'wp-admin/includes/post.php' );
 	}
@@ -141,15 +138,30 @@ function watu_add_movie_creator() {
 		'post_status'   => 'private'
 		)
 	);
+
+	if( ! is_wp_error($id) ){
+		echo 'Create Movie Page Created :p';
+	} else {
+		$errors = $movie_id->get_error_messages();
+		echo 'Create Movie Page Failed';
+		foreach ($errors as $error) {
+			echo $error;
+		}
+	}	
+	
+	return $id;
 }
 
-add_action( 'init', 'watu_add_movie_creator' );
+add_action( 'init', 'getreel_add_movie_creator' );
 
 /**
- * Create necessary movie pages
+ * automatically creates default movie pages like Films, Discover and People
+ * 
+ * @since 1.0
+ * @return int
  */
 
-function watu_create_movie_pages($wp_error) {
+function getree_create_movie_pages($wp_error) {
 	if ( ! is_admin() ) {
    		require_once( ABSPATH . 'wp-admin/includes/post.php' );
 	}
@@ -157,7 +169,7 @@ function watu_create_movie_pages($wp_error) {
 	if( empty( post_exists( 'Films' ) ) )  {
 		$id1 = wp_insert_post( array(
 			'post_title'    => wp_strip_all_tags( 'Films' ),
-			'post_content'  => 'Test',
+			'post_content'  => 'This is the movie page. Don\'t delete it!',
 			'post_type'     => 'page',
 			'post_status'   => 'publish'
 			)
@@ -167,7 +179,7 @@ function watu_create_movie_pages($wp_error) {
 	if( empty( post_exists( 'Discover' ) ) )  {
 		$id2 = wp_insert_post( array(
 			'post_title'    => wp_strip_all_tags( 'Discover' ),
-			'post_content'  => 'Test',
+			'post_content'  => 'This is the disover movies page. Don\'t delete it!',
 			'post_type'     => 'page',
 			'post_status'   => 'publish'
 			)
@@ -175,19 +187,26 @@ function watu_create_movie_pages($wp_error) {
 	}
 
 	if( empty( post_exists( 'People' ) ) )  {
-		$id2 = wp_insert_post( array(
+		$id3 = wp_insert_post( array(
 			'post_title'    => wp_strip_all_tags( 'People' ),
-			'post_content'  => 'Test',
+			'post_content'  => 'This is the actors page. Don\'t delete it!',
 			'post_type'     => 'page',
 			'post_status'   => 'publish'
 			)
 		);
 	}
 
+	if( ! is_wp_error($id) ){
+		echo 'Default Pages Created :]';
+	} else {
+		$errors = $movie_id->get_error_messages();
+		echo 'Default Pages Failed :[';
+		foreach ($errors as $error) {
+			echo $error;
+		}
+	}	
+
 	return $wp_error;
 }
 
 add_action( 'init', 'getreel_create_movie_pages' );
-
-include_once('php/movie-creator.php');
-include_once('php/people-creator.php');
