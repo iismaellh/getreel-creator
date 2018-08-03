@@ -77,8 +77,6 @@ function getreel_movie_creation_form($output) {
 							start: start,
 						},
 						success: function(html){
-							console.log(start);
-							console.log(end);
 							if(start == end + 1) $(window).trigger('discover finished');
 						}
 					});
@@ -136,8 +134,9 @@ function getreel_discover_movies() {
 		); 
 
 		$page = $_REQUEST['start'];
+		$api_key = get_option('getreel_tmdb_api_key');
 
-		$response = wp_remote_get( 'https://api.themoviedb.org/3/discover/movie?api_key=f9cf4ece2f9aeccbe524aaa92a1515ae&language=en-US&sort_by=popularity.desc&include_adult=false&include_video=false&page=' . $page, $args );
+		$response = wp_remote_get( 'https://api.themoviedb.org/3/discover/movie?api_key='.$api_key.'&language=en-US&sort_by=popularity.desc&include_adult=false&include_video=false&page=' . $page, $args );
 		$body = json_decode( wp_remote_retrieve_body( $response ), true );
 
 		foreach($body['results'] as $key => $movie) {
@@ -217,8 +216,10 @@ function getreel_create_movie($id) {
 		'timeout'     => 60,
 		'user-agent'  => 'WordPress/' . $wp_version . '; ' . home_url(),
 	); 
+
+	$api_key = get_option('getreel_tmdb_api_key');
 	
-	$response = wp_remote_get( 'https://api.themoviedb.org/3/movie/'.$id.'?api_key=f9cf4ece2f9aeccbe524aaa92a1515ae&language=en-US&append_to_response=credits,changes,videos,images,similar,reviews', $args );
+	$response = wp_remote_get( 'https://api.themoviedb.org/3/movie/'.$id.'?api_key='.$api_key.'&language=en-US&append_to_response=credits,changes,videos,images,similar,reviews', $args );
 	$data = json_decode( wp_remote_retrieve_body( $response ), true );
 
 	$movie_data = array();
@@ -449,3 +450,5 @@ function getreel_create_movie_pages($wp_error) {
 }
 
 add_action( 'wp', 'getreel_create_movie_pages' );
+
+include_once('php/options.php');

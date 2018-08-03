@@ -1,0 +1,3 @@
+* add movie images
+* add spinner
+* detele duplicate entries
