@@ -77,7 +77,9 @@ function getreel_movie_creation_form($output) {
 							start: start,
 						},
 						success: function(html){
-							if(start == end) $(window).trigger('discover finished');
+							console.log(start);
+							console.log(end);
+							if(start == end + 1) $(window).trigger('discover finished');
 						}
 					});
 				}
@@ -147,6 +149,8 @@ function getreel_update_movie($id, $data, $movie) {
 		'ID' => $id,
 		'post_title' => wp_strip_all_tags( $data['title'] ),
 		'post_content' => $data['overview'],
+		'post_tmdb' => $data['id'],
+		'post_imdb' => $data['imdb_id'],
 		'post_credits' => $credits,
 		'post_reviews' => $reviews,
 		'post_similar' => $similar,
@@ -272,7 +276,7 @@ function getreel_create_movie($id) {
  * @return int
  */
 function getreel_wp_insert_movie_data( $data , $postarr ) {
-	if( is_singular('movie') ) {
+	if( $data['post_type'] == 'movie' || $postarr['post_type'] == 'movie' ) {
 		$data['post_videos'] = $postarr['post_videos'];
 		$data['post_changes'] = $postarr['post_changes'];
 		$data['post_images'] = $postarr['post_images'];
