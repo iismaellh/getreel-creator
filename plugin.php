@@ -6,43 +6,54 @@
 /**
  * Movie creator forms
  */
-add_filter( 'the_content', function( $content ) {
+
+function getreel_movie_creation_form($output) {
 	if ( is_page( 'create-movie' ) ) {
-	//only show to logged in users who can edit posts
 		if ( is_user_logged_in() && current_user_can( 'edit_posts' ) ) {
-			ob_start();
+			$output  = '<div id="movie-creation-form">';
+			$output .= '<input type="text" id="movie-disc-start" name="movie-start" value="1">';
+			$output .= '<input type="text" id="movie-disc-end" name="movie-end" value="2">';
+			$output .= '<button onClick="discoverMovies()">Discover Movies</button>';
+			$output .= '</div>';
+
+			$output  = '<div id="people-creation-form">';
+			$output .= '<input type="text" id="movie-disc-start" name="movie-start" value="1">';
+			$output .= '<input type="text" id="movie-disc-end" name="movie-end" value="2">';
+			$output .= '<button onClick="discoverMovies()">Discover Movies</button>';
+			$output .= '</div>';
+
+			$ajax_url = admin_url( 'admin-ajax.php' );
+
 			?>
-			<form id="movie-creation-form">
-				<?php $m_storage = post_exists( 'Watu Movie Storage' ); ?>
-				<span class="movie-storage" data-id="<?php echo get_post( $m_storage )->ID; ?>"></span>
-				<label for="movie-creation-form"><?php _e( 'Movies', 'watuwatch' ); ?></label>
-				<textarea id="movie-submission-ids" name="movie-submission-ids" rows="7" cols="20"></textarea>
-				<input type="text" id="movie-disc-start" name="movieStart" value="1"><input type="text" id="movie-disc-end" name="movieEnd" value="2">
-				<div style="width: auto; height: 50px; background: black;" id="movie-submission-existing-ids"></div>
-				<button id="watu_create_movies" type="submit" style="color: #fff; margin-top: 20px;"><?php esc_attr_e( 'Create Movies', 'watuwatch'); ?></button>
-				<button id="watu_discover_movies"  type="submit" style="color: #fff; margin-top: 20px;"><?php esc_attr_e( 'Discover Movies', 'watuwatch'); ?></button>
-			</form>
-			<br />
-			<br />
-			<form id="people-creation-form">
-				<?php $p_storage = post_exists( 'Watu People Storage' ); ?>
-				<span class="people-storage" data-id="<?php echo get_post( $p_storage )->ID; ?>"></span>
-				<label for="people-creation-form"><?php _e( 'People', 'watuwatch' ); ?></label>
-				<textarea id="people-submission-ids" name="people-submission-ids"  rows="7" cols="20"></textarea>
-				<input type="text" id="people-disc-start" name="peopleStart" value="1"><input type="text" id="people-disc-end" name="peopleEnd" value="2">
-				<div id="people-submission-existing-ids" style="width: auto; height: 50px; background: black;"></div>
-				<button id="watu_create_people" type="submit" style="color: #fff; margin-top: 20px;"><?php esc_attr_e( 'Create People', 'watuwatch'); ?></button>
-				<button id="watu_discover_people"  type="submit" style="color: #fff; margin-top: 20px;"><?php esc_attr_e( 'Discover People', 'watuwatch'); ?></button>
-			</form>
-			<?php
-				$content .= ob_get_clean();
+			<script>
+				function discoverMovies(){
+					<?php $nonce = wp_create_nonce( 'start-movie-creation' );?>
+					jQuery.ajax({
+						type: "post",
+						url: "<?php echo $ajax_url; ?>",
+						data: { 
+							action: 'discover_movies', 
+							_ajax_nonce: '<?php echo $nonce; ?>' 
+						},
+						success: function(html){
+							console.log('movie discovered'); 
+						}
+					});
+				}
+			</script>
+			<?php	
 		} else {
-			$content .=  sprintf( '<a href="%1s">%2s</a>', esc_url( wp_login_url() ), __( 'Login Here', 'watuwatch' ) );
+			$output = sprintf( '<a href="%1s">%2s</a>', esc_url( wp_login_url() ), __( 'Login Here', 'getreel' ) );
 		}
 	}
 
-	return $content;
-});
+	return $output;
+}
+
+add_filter( 'the_content', 'getreel_movie_creation_form', 10, 1 ); {
+
+
+	
 
 /**
  * Setup or localize javascript
@@ -142,7 +153,7 @@ function watu_create_movie_pages($wp_error) {
 	return $wp_error;
 }
 
-add_action( 'init', 'watu_create_movie_pages' );
+add_action( 'init', 'getreel_create_movie_pages' );
 
 include_once('php/movie-creator.php');
 include_once('php/people-creator.php');
