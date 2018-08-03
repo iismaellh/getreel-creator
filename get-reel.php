@@ -1,12 +1,42 @@
 <?php
 /**
-	* Plugin Name: Get Reel Movie Creator
-*/
-
-/**
- * Movie creator forms
+ * Get Reel Movie Creator
+ *
+ * @package   get-reel
+ * @link      https://github.com/randomtu/getreel-creator
+ * @author    Ismael Herrera <ismael13herrera@gmail.com>
+ * @copyright 2018 Ismael Herrera
+ * @license   GPL v2 or later
+ *
+ * Plugin Name:  Get Reel Creator
+ * Description:  Movie fetcher using WP_Http::request wrapper.
+ * Version:      1.0
+ * Plugin URI:   n/a
+ * Author:       Ismael L. Herrera
+ * Author URI:   n/a
+ * Text Domain:  getreel
+ * Requires PHP: 5.3.6
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  */
 
+defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
+
+/**
+ * filter content and add the movie creation form
+ * 
+ * @since 1.0
+ * @param string $output
+ * @return null
+ */
 function getreel_movie_creation_form($output) {
 	if ( is_page( 'create-movie' ) ) {
 		if ( is_user_logged_in() && current_user_can( 'edit_posts' ) ) {
@@ -56,7 +86,11 @@ add_filter( 'the_content', 'getreel_movie_creation_form', 10, 1 ); {
 	
 
 /**
- * Setup or localize javascript
+ * filter content and add the movie creation form
+ * 
+ * @since 1.0
+ * @param string $output
+ * @return null
  */
  add_action( 'wp_enqueue_scripts', function() {
  	if ( is_user_logged_in() && current_user_can( 'edit_posts' ) ) {
